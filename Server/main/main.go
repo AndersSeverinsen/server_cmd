@@ -20,7 +20,7 @@ type BookingResponse struct {
 	FreeLocker      bool `json:"freeLocker"`
 }
 
-var lockers = make([]*Locker, 10)
+var lockers = make([]*Locker, 0)
 
 func addLocker(ip string) {
 	lockers = append(lockers, &Locker{Userid: "", Lockernum: len(lockers), Lockerip: ip})
@@ -194,7 +194,7 @@ func addLockerPrompt() {
 }
 
 func main() {
-	initLockers()
+	//initLockers()
 	// Prompt the user to add a locker in a while loop
 	go addLockerPrompt()
 	http.HandleFunc("/book/", bookHandler)
