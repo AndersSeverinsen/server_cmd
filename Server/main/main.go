@@ -126,8 +126,7 @@ func keepHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func lockerStatus(w http.ResponseWriter, r *http.Request) {
-    bytes, err := json.Marshal(lockers)
-    if err != nil {http.Error(w, "marshalling failed")}
+    bytes, _ := json.Marshal(lockers)
     w.Write(bytes)
 }
 
