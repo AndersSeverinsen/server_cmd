@@ -10,7 +10,6 @@ h1{
   grid-template-columns: repeat(5, 1fr); 
   gap: 20px;
   padding-top: 20px;
-  margin: 0 auto; 
 }
 
 body {
@@ -21,7 +20,7 @@ body {
 
 .grid-item {  
   color: black; 
-  font-family: 'monospace';
+  font-family: monospace;
   background-color: rgb(181, 181, 181);  
   padding: 70px;
   border: 1px solid black;
@@ -30,8 +29,6 @@ body {
   align-items: center;
   justify-content: space-between; 
   font-size: 25px;
-  cursor: pointer; 
-  transition: background-color 0.3s, transform 0.2s; 
 }
 
 .indicator {
@@ -40,11 +37,6 @@ body {
   background-color: green;
   border-radius: 50%;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
-}
-
-.grid-item:hover {
-  background-color: #d1d1d1; 
-  transform: scale(1.02); 
 }
 
 .grid-item.occupied .indicator {
