@@ -12,25 +12,27 @@ import (
 var lockers = make([]*int, 10)
 
 // Create a map to store the user's booking
-var users = make(map[int]int)
+var users = make(map[int]*int)
 
 func book(userid int) string {
+	fmt.Println("Users:", users)
+	fmt.Println("Lockers:", lockers)
 	// Check if the user has any bookings
-	if users[userid] != 0 {
+	if users[userid] != nil {
 		// If the user has a booking, return the booking
-		return fmt.Sprintf("User %d has the following booking: %v", userid, users[userid])
+		return fmt.Sprintf("User %d already has the following locker: %v", userid, *users[userid])
 	} else {
 		// If the user has no bookings, check if a locker is available
 		for i, locker := range lockers {
 			if locker == nil {
 				// If a locker is available, book it for the user
 				lockers[i] = &userid
-				users[userid] = i
-				return fmt.Sprintf("User %d has booked locker %d", userid, i)
+				users[userid] = &i
+				return fmt.Sprintf("User %d has no booking, so booking locker %d", userid, i)
 			}
 		}
 		// If no lockers are available, return a message
-		return fmt.Sprintf("User %d has no bookings. No lockers are available", userid)
+		return fmt.Sprintf("User %d has no booking, and no lockers are available", userid)
 	}
 }
 
@@ -42,13 +44,8 @@ func bookHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Parse URL path for "book/{id}/{value}"
 	path := strings.TrimPrefix(r.URL.Path, "/book/")
-	parts := strings.Split(path, "/")
-	if len(parts) != 2 {
-		http.Error(w, "Invalid URL format. Expected /book/{userid}", http.StatusBadRequest)
-		return
-	}
-	// Convert the ID and value from strings to integers
-	userid, err1 := strconv.Atoi(parts[0])
+	// Convert the ID from string to integer
+	userid, err1 := strconv.Atoi(path)
 	if err1 != nil {
 		http.Error(w, "UserID should be an integer", http.StatusBadRequest)
 		return
@@ -57,7 +54,6 @@ func bookHandler(w http.ResponseWriter, r *http.Request) {
 	response := book(userid)
 
 	// Write response to the client
-	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(response))
 }
 
@@ -66,6 +62,6 @@ func main() {
 	http.HandleFunc("/book/", bookHandler)
 
 	// Start the server on port 8080
-	fmt.Println("Server started on port 8080")
+	//fmt.Println("Server started on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
