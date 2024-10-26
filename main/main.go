@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,8 +13,19 @@ type Locker struct {
 	lockernum int
 }
 
-// Create a slice of pointers to integers to represent the lockers
+type BookingResponse struct {
+	Locker          int  `json:"locker,omitempty"`
+	ExistingBooking bool `json:"existingBooking"`
+	FreeLocker      bool `json:"freeLocker"`
+}
+
 var lockers = make([]*Locker, 10)
+
+func initLockers() {
+	for i := range lockers {
+		lockers[i] = &Locker{userid: "", lockernum: i + 1} // lockernum starts from 1
+	}
+}
 
 func hasLocker(id string) (bool, int) {
 	for _, locker := range lockers {
@@ -24,116 +36,104 @@ func hasLocker(id string) (bool, int) {
 	return false, -1
 }
 
-func initLockers() {
-	for i := range lockers {
-		lockers[i] = &Locker{userid: "", lockernum: i}
-	}
-}
-
 func book(userid string) string {
-	fmt.Println("Lockers:", lockers)
-	// Check if the user has any bookings
-	hasLocker, lockernum := hasLocker(userid)
-	if hasLocker {
-		// If the user has a booking, return the booking
-		return fmt.Sprintf("User %s already has locker %v", userid, lockernum)
+	hasBooking, lockernum := hasLocker(userid)
+	var response BookingResponse
+
+	if hasBooking {
+		response = BookingResponse{
+			ExistingBooking: true,
+			Locker:          lockernum,
+			FreeLocker:      true,
+		}
 	} else {
-		// If the user has no bookings, check if a locker is available
-		for _, locker := range lockers {
-			if locker.userid == "" {
-				// If a locker is available, book it for the user
-				locker.userid = userid
-				return fmt.Sprintf("User %s has no booking, so booking locker %d", userid, locker.lockernum)
+		for i := range lockers {
+			if lockers[i].userid == "" {
+				lockers[i].userid = userid
+				response = BookingResponse{
+					ExistingBooking: false,
+					Locker:          lockers[i].lockernum,
+					FreeLocker:      true,
+				}
+				break
 			}
 		}
-		// If no lockers are available, return a message
-		return fmt.Sprintf("User %s has no booking, and no lockers are available", userid)
+		if !response.FreeLocker {
+			response = BookingResponse{
+				ExistingBooking: false,
+				FreeLocker:      false,
+			}
+		}
 	}
+
+	jsonResponse, _ := json.Marshal(response)
+	return string(jsonResponse)
 }
 
 func bookHandler(w http.ResponseWriter, r *http.Request) {
-	// Only accept POST requests
 	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+		http.Error(w, `{"error": "Only POST requests are allowed"}`, http.StatusMethodNotAllowed)
 		return
 	}
-	// Parse URL path for "book/{userid}"
 	userid := strings.TrimPrefix(r.URL.Path, "/book/")
-
-	// Call the book function
 	response := book(userid)
-
-	// Write response to the client
-	w.Write([]byte(response))
+	w.Header().Set("Content-Type", "application/json")
+	_, err := w.Write([]byte(response))
+	if err != nil {
+		return
+	}
 }
 
 func cancel(userid string) string {
-	// Check if the user has any bookings
-	hasLocker, lockernum := hasLocker(userid)
-	if hasLocker {
-		// If the user has a booking, cancel it
+	hasBooking, lockernum := hasLocker(userid)
+	if hasBooking {
 		lockers[lockernum].userid = ""
-		return fmt.Sprintf("User %s has cancelled the booking for locker %d", userid, lockernum)
-	} else {
-		// If the user has no bookings, return a message
-		return fmt.Sprintf("User %s has no booking", userid)
+		return fmt.Sprintf(`{"message": "User %s has cancelled the booking for locker %d"}`, userid, lockernum)
 	}
+	return fmt.Sprintf(`{"error": "User %s has no booking"}`, userid)
 }
 
 func cancelHandler(w http.ResponseWriter, r *http.Request) {
-	// Only accept POST requests
 	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+		http.Error(w, `{"error": "Only POST requests are allowed"}`, http.StatusMethodNotAllowed)
 		return
 	}
-	// Parse URL path for "cancelBooking/{userid}"
 	userid := strings.TrimPrefix(r.URL.Path, "/cancelBooking/")
-
-	// Call the cancel function
 	response := cancel(userid)
-
-	// Write response to the client
-	w.Write([]byte(response))
+	w.Header().Set("Content-Type", "application/json")
+	_, err := w.Write([]byte(response))
+	if err != nil {
+		return
+	}
 }
 
 func keep(userid string) string {
-	// Check if the user has any bookings
-	hasLocker, lockernum := hasLocker(userid)
-	if hasLocker {
-		// If the user has a booking, return the booking
-		return fmt.Sprintf("User %s has kept the booking for locker %v", userid, lockernum)
-	} else {
-		// If the user has no bookings, return a message
-		return fmt.Sprintf("User %s has no booking", userid)
+	hasBooking, lockernum := hasLocker(userid)
+	if hasBooking {
+		return fmt.Sprintf(`{"message": "User %s has kept the booking for locker %d"}`, userid, lockernum)
 	}
+	return fmt.Sprintf(`{"error": "User %s has no booking"}`, userid)
 }
 
 func keepHandler(w http.ResponseWriter, r *http.Request) {
-	// Only accept POST requests
 	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+		http.Error(w, `{"error": "Only POST requests are allowed"}`, http.StatusMethodNotAllowed)
 		return
 	}
-	// Parse URL path for "keepBooking/{userid}"
 	userid := strings.TrimPrefix(r.URL.Path, "/keepBooking/")
-
-	// Call the keep function
 	response := keep(userid)
-
-	// Write response to the client
-	w.Write([]byte(response))
+	w.Header().Set("Content-Type", "application/json")
+	_, err := w.Write([]byte(response))
+	if err != nil {
+		return
+	}
 }
 
 func main() {
 	initLockers()
-	// Start the server using mux as the root handler
 	http.HandleFunc("/book/", bookHandler)
-
 	http.HandleFunc("/cancelBooking/", cancelHandler)
-
 	http.HandleFunc("/keepBooking/", keepHandler)
-
-	// Start the server on port 8080
-	//fmt.Println("Server started on port 8080")
+	fmt.Println("Server started on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
