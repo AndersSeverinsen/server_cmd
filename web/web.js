@@ -25,19 +25,26 @@ function httpGet(theUrl) {
 var initial
 
 function continuousUpdate() {
-    let resp = httpGet("http://127.0.0.1:8080/lockerStatus/")
-    if (resp !== initial) {
-        document.querySelector(".big-grid").innerHTML = ''
-        createLockerMap(JSON.parse(resp))
-    }
+    setInterval( () => {
+        console.log("dfsdfsd")
+        let resp = httpGet("http://127.0.0.1:8080/lockerStatus/")
+        if (resp !== initial) {
+            document.querySelector(".big-grid").innerHTML = ''
+            createLockerMap(JSON.parse(resp))
+            continuousUpdate()
+        }
+    }, 1000)
 }
 
 
-document.addEventListener("DOMContentLoaded", function(event){
+function main() {
     res = httpGet("http://127.0.0.1:8080/lockerStatus/")
     console.log(res)
     createLockerMap(JSON.parse(res))
     initial = res 
-    setInterval(continuousUpdate, 1000)
-  });
+    continuousUpdate()
+}
+
+
+document.addEventListener("DOMContentLoaded", main)
   
