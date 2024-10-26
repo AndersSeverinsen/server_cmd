@@ -2,11 +2,12 @@ h1{
   font-family:'monospace';
   text-align: center;
   color: #0000ff;
+  font-size: 50px;
 }
 
 .big-grid {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: repeat(5, 1fr); 
   gap: 20px;
   padding-top: 20px;
 }
@@ -17,27 +18,26 @@ body {
   background-color: #f4f4f4;
 }
 
-.grid-item { 
+.grid-item {  
   color: black; 
-  text-align: right;
-  font-family:monospace;
+  font-family: monospace;
   background-color: rgb(181, 181, 181);  
-  padding: 60px;
-  border-color: black;
-  border-width: 1px;
-  border-style: solid;
+  padding: 70px;
+  border: 1px solid black;
   border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  font-size: 25px;
 }
 
 .indicator {
-  width: 15px;
-  height: 15px;
-  background-color: green; 
+  width: 30px;
+  height: 30px;
+  background-color: green;
   border-radius: 50%;
-  position: center;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
 }
-
 
 .grid-item.occupied .indicator {
   background-color: red; 
