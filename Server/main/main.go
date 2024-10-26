@@ -9,9 +9,9 @@ import (
 )
 
 type Locker struct {
-	Userid    string `json: ""`
-	Lockernum int
-	Lockerip  string
+	Userid    string `json:"userid"`
+	Lockernum int    `json:"lockernum"`
+	Lockerip  string `json:"lockerip"`
 }
 
 type BookingResponse struct {
