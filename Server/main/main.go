@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 type Locker struct {
 	userid    string
 	lockernum int
+	lockerip  string
 }
 
 // Create a slice of pointers to integers to represent the lockers
@@ -27,7 +29,7 @@ func hasLocker(id string) (bool, int) {
 
 func initLockers() {
 	for i := range lockers {
-		lockers[i] = &Locker{userid: "", lockernum: i}
+		lockers[i] = &Locker{userid: "", lockernum: i, lockerip: ""}
 	}
 }
 
@@ -125,9 +127,62 @@ func keepHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
+func unlock(lockerindex string) string {
+	// Convert lockerindex to an integer
+	lockernum, _ := strconv.Atoi(lockerindex)
+
+	// Check if the locker is available
+	for _, locker := range lockers {
+		if locker.lockernum == lockernum {
+			// If the locker is available, unlock it
+			ip := locker.lockerip
+
+			// Send a POST request to the locker to unlock it
+			_, err := http.Post("http://"+ip+":8080/unlock", "application/json", nil)
+			if err != nil {
+				return fmt.Sprintf("Error unlocking locker %d", lockernum)
+			}
+			return fmt.Sprintf("Unlocked locker %d", lockernum)
+		}
+	}
+	return fmt.Sprintf("Locker %d is not initialized", lockernum)
+}
+
+func unlockHandler(w http.ResponseWriter, r *http.Request) {
+	// Only accept POST requests
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// Parse URL path for "unlock/{userid}"
+	lockerindex := strings.TrimPrefix(r.URL.Path, "/unlock/")
+
+	// Call the unlock function
+	response := unlock(lockerindex)
+
+	// Write response to the client
+	w.Write([]byte(response))
+}
+
 func lockerStatus(w http.ResponseWriter, r *http.Request) {
-    bytes, _ := json.Marshal(lockers)
-    w.Write(bytes)
+	// Only accept POST requests
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// Parse URL path for "unlock/{userid}"
+	lockerindex := strings.TrimPrefix(r.URL.Path, "/lockerStatus/")
+
+	if lockerindex == "" {
+		bytes, _ := json.Marshal(lockers)
+		w.Write(bytes)
+	}
+
+	// Call the unlock function
+	response := unlock(lockerindex)
+
+	// Write response to the client
+	w.Write([]byte(response))
 }
 
 func main() {
@@ -138,8 +193,10 @@ func main() {
 	http.HandleFunc("/cancelBooking/", cancelHandler)
 
 	http.HandleFunc("/keepBooking/", keepHandler)
-    
+
 	http.HandleFunc("/lockerStatus/", lockerStatus)
+
+	http.HandleFunc("/unlock/", unlockHandler)
 
 	// Start the server on port 8080
 	//fmt.Println("Server started on port 8080")

@@ -30,11 +30,12 @@ func TestBooking(t *testing.T) {
 	if err != nil {
 		fmt.Println(err)
 	}
-
+	// Send the request
 	res, err := http.DefaultClient.Do(request)
 	if err != nil {
 		fmt.Printf("client: error making http request: %s\n", err)
 	}
+	// Read the response and handle errors
 	body, err := io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
@@ -45,6 +46,33 @@ func TestBooking(t *testing.T) {
 	}
 	bodystr := string(body[:])
 	assertEqual(t, bodystr, "User 1 has no booking, so booking locker 0")
+
+	// Check locker status
+	assertEqual(t, lockers[0].userid, "1")
+
+	// Check locker unlock status response
+	// Create a new request
+	requestLog, errLog := http.NewRequest(http.MethodPost, "http://localhost:8080/lockerStatus/1", nil)
+	if errLog != nil {
+		fmt.Println(err)
+	}
+	// Send the request
+	resLog, errLog := http.DefaultClient.Do(requestLog)
+	if errLog != nil {
+		fmt.Printf("client: error making http request: %s\n", err)
+	}
+	// Read the response and handle errors
+	bodyLog, errLog := io.ReadAll(resLog.Body)
+	resLog.Body.Close()
+	if res.StatusCode > 299 {
+		fmt.Printf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
+	}
+	if errLog != nil {
+		fmt.Println(err)
+	}
+	bodystrLog := string(bodyLog[:])
+	fmt.Println(bodystrLog)
+	assertEqual(t, bodystrLog, "Unlocked locker 1")
 }
 
 func TestBookingWhenUserAlreadyHasBooking(t *testing.T) {
