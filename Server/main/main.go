@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -124,6 +125,12 @@ func keepHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(response))
 }
 
+func lockerStatus(w http.ResponseWriter, r *http.Request) {
+    bytes, err := json.Marshal(lockers)
+    if err != nil {http.Error(w, "marshalling failed")}
+    w.Write(bytes)
+}
+
 func main() {
 	initLockers()
 	// Start the server using mux as the root handler
@@ -132,6 +139,8 @@ func main() {
 	http.HandleFunc("/cancelBooking/", cancelHandler)
 
 	http.HandleFunc("/keepBooking/", keepHandler)
+    
+	http.HandleFunc("/lockerStatus/", lockerStatus)
 
 	// Start the server on port 8080
 	//fmt.Println("Server started on port 8080")
