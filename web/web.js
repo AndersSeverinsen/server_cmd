@@ -21,9 +21,23 @@ function httpGet(theUrl) {
     xmlHttp.send( null );
     return xmlHttp.responseText;
 }
+
+var initial
+
+function continuousUpdate() {
+    let resp = httpGet("http://127.0.0.1:8080/lockerStatus/")
+    if (resp !== initial) {
+        document.querySelector(".big-grid").innerHTML = ''
+        createLockerMap(JSON.parse(resp))
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", function(event){
     res = httpGet("http://127.0.0.1:8080/lockerStatus/")
     console.log(res)
     createLockerMap(JSON.parse(res))
+    initial = res 
+    setInterval(continuousUpdate, 1000)
   });
   
