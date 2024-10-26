@@ -1,22 +1,44 @@
+h1{
+  font-family:'monospace';
+  text-align: center;
+  color: #0000ff;
+}
+
 .big-grid {
   display: grid;
-  grid-template-columns: repeat(5, 10fr); 
-  
+  grid-template-columns: auto auto;
+  gap: 20px;
+  padding-top: 20px;
+}
+
+body {
+  background-image: url("aulogo_dk_var1_sort.png");
+  background-repeat: no-repeat;
+  background-color: #f4f4f4;
 }
 
 .grid-item { 
-  color: #000; 
-  text-align: center;
-  padding: 20px;
-  font-size: 30px;
-  border-radius: 4px; 
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+  color: black; 
+  text-align: right;
+  font-family:monospace;
+  background-color: rgb(181, 181, 181);  
+  padding: 60px;
+  border-color: black;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 15px;
 }
 
-.lock-item {
-  background-color: red;
+.indicator {
+  width: 15px;
+  height: 15px;
+  background-color: green; 
+  border-radius: 50%;
+  position: center;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
 }
 
-.unlock-item {
-  background-color: green;
+
+.grid-item.occupied .indicator {
+  background-color: red; 
 }
