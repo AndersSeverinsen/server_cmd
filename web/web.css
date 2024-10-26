@@ -7,9 +7,10 @@ h1{
 
 .big-grid {
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: repeat(5, 1fr); 
   gap: 20px;
   padding-top: 20px;
+  margin: 0 auto; 
 }
 
 body {
@@ -22,7 +23,7 @@ body {
   color: black; 
   font-family: 'monospace';
   background-color: rgb(181, 181, 181);  
-  padding: 75px;
+  padding: 70px;
   border: 1px solid black;
   border-radius: 15px;
   display: flex;
