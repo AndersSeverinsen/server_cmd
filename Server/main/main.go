@@ -203,6 +203,10 @@ func main() {
 	http.HandleFunc("/lockerStatus/", lockerStatus)
 	http.HandleFunc("/unlock/", unlockHandler)
 
+	// Serve static files from the "web" directory at the root "/"
+	fs := http.FileServer(http.Dir("./web"))
+	http.Handle("/", fs)
+
 	// Start the server on port 8080
 	fmt.Println("Server started on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
