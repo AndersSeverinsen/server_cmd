@@ -54,7 +54,7 @@ func book(userid string) string {
 	} else {
 		for i := range lockers {
 			if lockers[i].Userid == "" {
-				unlock(i, "Green")
+				unlock(i, "Red")
 				lockers[i].Userid = userid
 				response = BookingResponse{
 					ExistingBooking: false,
@@ -164,7 +164,7 @@ func unlock(lockerindex int, color string) {
 
 			// Send a POST request to the locker to unlock it
 			url := "http://" + ip + ":8080/unlock" + color
-			_, _ = http.Post(url, "application/json", nil)
+			_, _ = http.Get(url)
 		}
 	}
 }
