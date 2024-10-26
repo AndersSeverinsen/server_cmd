@@ -3,15 +3,15 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
-	"log"
 )
 
 type Locker struct {
-	userid    string
-	lockernum int
-	lockerip  string
+	Userid    string `json:"userid"`
+	Lockernum int    `json:"lockernum"`
+	Lockerip  string `json:"lockerip"`
 }
 
 type BookingResponse struct {
@@ -23,13 +23,13 @@ type BookingResponse struct {
 var lockers = make([]*Locker, 10)
 
 func addLocker(ip string) {
-	lockers = append(lockers, &Locker{userid: "", lockernum: len(lockers), lockerip: ip})
+	lockers = append(lockers, &Locker{Userid: "", Lockernum: len(lockers), Lockerip: ip})
 }
 
 func hasLocker(id string) (bool, int) {
 	for _, locker := range lockers {
-		if locker.userid == id {
-			return true, locker.lockernum
+		if locker.Userid == id {
+			return true, locker.Lockernum
 		}
 	}
 	return false, -1
@@ -37,7 +37,7 @@ func hasLocker(id string) (bool, int) {
 
 func initLockers() {
 	for i := range lockers {
-		lockers[i] = &Locker{userid: "", lockernum: i, lockerip: ""}
+		lockers[i] = &Locker{Userid: "", Lockernum: i, Lockerip: ""}
 	}
 }
 
@@ -53,12 +53,12 @@ func book(userid string) string {
 		}
 	} else {
 		for i := range lockers {
-			if lockers[i].userid == "" {
+			if lockers[i].Userid == "" {
 				unlock(i)
-				lockers[i].userid = userid
+				lockers[i].Userid = userid
 				response = BookingResponse{
 					ExistingBooking: false,
-					Locker:          lockers[i].lockernum,
+					Locker:          lockers[i].Lockernum,
 					FreeLocker:      true,
 				}
 				break
@@ -94,7 +94,7 @@ func cancel(userid string) string {
 	hasBooking, lockernum := hasLocker(userid)
 	if hasBooking {
 		unlock(lockernum)
-		lockers[lockernum].userid = ""
+		lockers[lockernum].Userid = ""
 		return fmt.Sprintf(`{"message": "User %s has cancelled the booking for locker %d"}`, userid, lockernum)
 	}
 	return fmt.Sprintf(`{"error": "User %s has no booking"}`, userid)
@@ -158,9 +158,9 @@ func unlockHandler(w http.ResponseWriter, r *http.Request) {
 func unlock(lockerindex int) {
 	// Check if the locker is available
 	for _, locker := range lockers {
-		if locker.lockernum == lockerindex {
+		if locker.Lockernum == lockerindex {
 			// If the locker is available, unlock it
-			ip := locker.lockerip
+			ip := locker.Lockerip
 
 			// Send a POST request to the locker to unlock it
 			_, _ = http.Post("http://"+ip+":8080/unlock", "application/json", nil)
@@ -169,8 +169,17 @@ func unlock(lockerindex int) {
 }
 
 func lockerStatus(w http.ResponseWriter, r *http.Request) {
-	bytes, _ := json.Marshal(lockers)
-	w.Write(bytes)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-Type", "application/json")
+	bytes, err := json.Marshal(lockers)
+	if err != nil {
+		http.Error(w, "Unable to marshal locker data", http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	if _, err := w.Write(bytes); err != nil {
+		fmt.Printf("Failed to write response: %v\n", err)
+	}
 }
 
 func addLockerPrompt() {
@@ -196,6 +205,5 @@ func main() {
 	// Start the server on port 8080
 	fmt.Println("Server started on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
-
 
 }
