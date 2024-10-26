@@ -1,0 +1,18 @@
+.big-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); 
+  gap: 10px;
+  background-color: #2196F3; 
+  padding: 10px;
+  border-radius: 8px; 
+}
+
+.grid-item {
+  background-color: #FFFFFF; 
+  color: #000; 
+  text-align: center;
+  padding: 20px;
+  font-size: 30px;
+  border-radius: 4px; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); 
+}
