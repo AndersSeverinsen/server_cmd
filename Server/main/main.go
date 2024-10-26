@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"log"
 )
 
 type Locker struct {
@@ -184,6 +185,8 @@ func addLockerPrompt() {
 
 func main() {
 	initLockers()
+	// Prompt the user to add a locker in a while loop
+	go addLockerPrompt()
 	http.HandleFunc("/book/", bookHandler)
 	http.HandleFunc("/cancelBooking/", cancelHandler)
 	http.HandleFunc("/keepBooking/", keepHandler)
@@ -192,8 +195,7 @@ func main() {
 
 	// Start the server on port 8080
 	fmt.Println("Server started on port 8080")
-	http.ListenAndServe(":8080", nil)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 
-	// Prompt the user to add a locker in a while loop
-	addLockerPrompt()
+
 }
