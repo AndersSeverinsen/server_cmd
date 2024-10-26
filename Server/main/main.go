@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
@@ -22,6 +20,10 @@ type BookingResponse struct {
 }
 
 var lockers = make([]*Locker, 10)
+
+func addLocker(ip string) {
+	lockers = append(lockers, &Locker{userid: "", lockernum: len(lockers), lockerip: ip})
+}
 
 func hasLocker(id string) (bool, int) {
 	for _, locker := range lockers {
@@ -51,6 +53,7 @@ func book(userid string) string {
 	} else {
 		for i := range lockers {
 			if lockers[i].userid == "" {
+				unlock(i)
 				lockers[i].userid = userid
 				response = BookingResponse{
 					ExistingBooking: false,
@@ -89,6 +92,7 @@ func bookHandler(w http.ResponseWriter, r *http.Request) {
 func cancel(userid string) string {
 	hasBooking, lockernum := hasLocker(userid)
 	if hasBooking {
+		unlock(lockernum)
 		lockers[lockernum].userid = ""
 		return fmt.Sprintf(`{"message": "User %s has cancelled the booking for locker %d"}`, userid, lockernum)
 	}
@@ -112,6 +116,7 @@ func cancelHandler(w http.ResponseWriter, r *http.Request) {
 func keep(userid string) string {
 	hasBooking, lockernum := hasLocker(userid)
 	if hasBooking {
+		unlock(lockernum)
 		return fmt.Sprintf(`{"message": "User %s has kept the booking for locker %d"}`, userid, lockernum)
 	}
 	return fmt.Sprintf(`{"error": "User %s has no booking"}`, userid)
@@ -149,46 +154,32 @@ func unlockHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func unlock(lockerindex string) string {
-	// Convert lockerindex to an integer
-	lockernum, _ := strconv.Atoi(lockerindex)
-
+func unlock(lockerindex int) {
 	// Check if the locker is available
 	for _, locker := range lockers {
-		if locker.lockernum == lockernum {
+		if locker.lockernum == lockerindex {
 			// If the locker is available, unlock it
 			ip := locker.lockerip
 
 			// Send a POST request to the locker to unlock it
-			_, err := http.Post("http://"+ip+":8080/unlock", "application/json", nil)
-			if err != nil {
-				return fmt.Sprintf("Error unlocking locker %d", lockernum)
-			}
-			return fmt.Sprintf("Unlocked locker %d", lockernum)
+			_, _ = http.Post("http://"+ip+":8080/unlock", "application/json", nil)
 		}
 	}
-	return fmt.Sprintf("Locker %d is not initialized", lockernum)
 }
 
 func lockerStatus(w http.ResponseWriter, r *http.Request) {
-	// Only accept POST requests
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST requests are allowed", http.StatusMethodNotAllowed)
-		return
+	bytes, _ := json.Marshal(lockers)
+	w.Write(bytes)
+}
+
+func addLockerPrompt() {
+	for {
+		var ip string
+		fmt.Print("Enter the IP address of the locker: ")
+		fmt.Scanln(&ip)
+		addLocker(ip)
+		fmt.Println("Locker added successfully")
 	}
-	// Parse URL path for "unlock/{userid}"
-	lockerindex := strings.TrimPrefix(r.URL.Path, "/lockerStatus/")
-
-	if lockerindex == "" {
-		bytes, _ := json.Marshal(lockers)
-		w.Write(bytes)
-	}
-
-	// Call the unlock function
-	response := unlock(lockerindex)
-
-	// Write response to the client
-	w.Write([]byte(response))
 }
 
 func main() {
@@ -201,5 +192,8 @@ func main() {
 
 	// Start the server on port 8080
 	fmt.Println("Server started on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.ListenAndServe(":8080", nil)
+
+	// Prompt the user to add a locker in a while loop
+	addLockerPrompt()
 }

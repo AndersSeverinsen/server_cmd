@@ -49,30 +49,6 @@ func TestBooking(t *testing.T) {
 
 	// Check locker status
 	assertEqual(t, lockers[0].userid, "1")
-
-	// Check locker unlock status response
-	// Create a new request
-	requestLog, errLog := http.NewRequest(http.MethodPost, "http://localhost:8080/lockerStatus/1", nil)
-	if errLog != nil {
-		fmt.Println(err)
-	}
-	// Send the request
-	resLog, errLog := http.DefaultClient.Do(requestLog)
-	if errLog != nil {
-		fmt.Printf("client: error making http request: %s\n", err)
-	}
-	// Read the response and handle errors
-	bodyLog, errLog := io.ReadAll(resLog.Body)
-	resLog.Body.Close()
-	if res.StatusCode > 299 {
-		fmt.Printf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
-	}
-	if errLog != nil {
-		fmt.Println(err)
-	}
-	bodystrLog := string(bodyLog[:])
-	fmt.Println(bodystrLog)
-	assertEqual(t, bodystrLog, "Unlocked locker 1")
 }
 
 func TestBookingWhenUserAlreadyHasBooking(t *testing.T) {
@@ -234,4 +210,17 @@ func TestBookingWhenUserHasBookingAndKeeps(t *testing.T) {
 	}
 	bodystr := string(body[:])
 	assertEqual(t, bodystr, "{\"message\": \"User 5 has kept the booking for locker 0\"}")
+}
+
+func TestAddLocker(t *testing.T) {
+	fmt.Println("TestAddLocker")
+	// Call main function
+	go main()
+
+	// Delay 1 millisecond to allow the server to start
+	time.Sleep(1 * time.Millisecond)
+
+	addLocker("192.123.1.100")
+
+	assertEqual(t, len(lockers), 11)
 }
