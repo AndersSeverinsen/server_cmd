@@ -45,7 +45,7 @@ func TestBooking(t *testing.T) {
 		fmt.Println(err)
 	}
 	bodystr := string(body[:])
-	assertEqual(t, bodystr, "User 1 has no booking, so booking locker 0")
+	assertEqual(t, bodystr, "{\"existingBooking\":false,\"freeLocker\":true}")
 
 	// Check locker status
 	assertEqual(t, lockers[0].userid, "1")
@@ -108,7 +108,7 @@ func TestBookingWhenUserAlreadyHasBooking(t *testing.T) {
 		fmt.Println(err)
 	}
 	bodystr := string(body[:])
-	assertEqual(t, bodystr, "User 2 already has locker 0")
+	assertEqual(t, bodystr, "{\"existingBooking\":true,\"freeLocker\":true}")
 }
 
 func TestBookingWhenUserHasNoBookingAndNoLockerAvailable(t *testing.T) {
@@ -147,7 +147,7 @@ func TestBookingWhenUserHasNoBookingAndNoLockerAvailable(t *testing.T) {
 		fmt.Println(err)
 	}
 	bodystr := string(body[:])
-	assertEqual(t, bodystr, "User 3 has no booking, and no lockers are available")
+	assertEqual(t, bodystr, "{\"existingBooking\":false,\"freeLocker\":false}")
 }
 
 func TestBookingWhenUserHasBookingAndCancels(t *testing.T) {
@@ -190,7 +190,7 @@ func TestBookingWhenUserHasBookingAndCancels(t *testing.T) {
 		fmt.Println(err)
 	}
 	bodystr := string(body[:])
-	assertEqual(t, bodystr, "User 4 has cancelled the booking for locker 0")
+	assertEqual(t, bodystr, "{\"message\": \"User 4 has cancelled the booking for locker 0\"}")
 }
 
 func TestBookingWhenUserHasBookingAndKeeps(t *testing.T) {
@@ -233,5 +233,5 @@ func TestBookingWhenUserHasBookingAndKeeps(t *testing.T) {
 		fmt.Println(err)
 	}
 	bodystr := string(body[:])
-	assertEqual(t, bodystr, "User 5 has kept the booking for locker 0")
+	assertEqual(t, bodystr, "{\"message\": \"User 5 has kept the booking for locker 0\"}")
 }
