@@ -4,35 +4,50 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 )
 
+type Locker struct {
+	userid    string
+	lockernum int
+}
+
 // Create a slice of pointers to integers to represent the lockers
-var lockers = make([]*int, 10)
+var lockers = make([]*Locker, 10)
 
-// Create a map to store the user's booking
-var users = make(map[int]*int)
+func hasLocker(id string) (bool, int) {
+	for _, locker := range lockers {
+		if locker.userid == id {
+			return true, locker.lockernum
+		}
+	}
+	return false, -1
+}
 
-func book(userid int) string {
-	fmt.Println("Users:", users)
+func initLockers() {
+	for i, locker := range lockers {
+		locker.lockernum = i
+	}
+}
+
+func book(id string) string {
 	fmt.Println("Lockers:", lockers)
 	// Check if the user has any bookings
-	if users[userid] != nil {
+	hasLocker, lockernum := hasLocker(id)
+	if hasLocker != false {
 		// If the user has a booking, return the booking
-		return fmt.Sprintf("User %d already has the following locker: %v", userid, *users[userid])
+		return fmt.Sprintf("User %s already has the following locker: %v", id, lockernum)
 	} else {
 		// If the user has no bookings, check if a locker is available
-		for i, locker := range lockers {
-			if locker == nil {
+		for _, locker := range lockers {
+			if locker.userid == "" {
 				// If a locker is available, book it for the user
-				lockers[i] = &userid
-				users[userid] = &i
-				return fmt.Sprintf("User %d has no booking, so booking locker %d", userid, i)
+				locker.userid = id
+				return fmt.Sprintf("User %s has no booking, so booking locker %d", id, locker.lockernum)
 			}
 		}
 		// If no lockers are available, return a message
-		return fmt.Sprintf("User %d has no booking, and no lockers are available", userid)
+		return fmt.Sprintf("User %s has no booking, and no lockers are available", id)
 	}
 }
 
@@ -44,22 +59,22 @@ func bookHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Parse URL path for "book/{id}/{value}"
 	path := strings.TrimPrefix(r.URL.Path, "/book/")
-	// Convert the ID from string to integer
-	userid, err1 := strconv.Atoi(path)
-	if err1 != nil {
-		http.Error(w, "UserID should be an integer", http.StatusBadRequest)
-		return
-	}
+
 	// Call the book function
-	response := book(userid)
+	response := book(path)
 
 	// Write response to the client
 	w.Write([]byte(response))
 }
 
 func main() {
+	initLockers()
 	// Start the server using mux as the root handler
 	http.HandleFunc("/book/", bookHandler)
+
+	//http.HandleFunc("/cancelBooking/", cancelHandler)
+
+	//http.HandleFunc("/keepBooking/", keepHandler)
 
 	// Start the server on port 8080
 	//fmt.Println("Server started on port 8080")
