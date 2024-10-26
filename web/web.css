@@ -2,6 +2,7 @@ h1{
   font-family:'monospace';
   text-align: center;
   color: #0000ff;
+  font-size: 50px;
 }
 
 .big-grid {
@@ -17,27 +18,33 @@ body {
   background-color: #f4f4f4;
 }
 
-.grid-item { 
+.grid-item {  
   color: black; 
-  text-align: right;
-  font-family:monospace;
+  font-family: 'monospace';
   background-color: rgb(181, 181, 181);  
-  padding: 60px;
-  border-color: black;
-  border-width: 1px;
-  border-style: solid;
+  padding: 75px;
+  border: 1px solid black;
   border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; 
+  font-size: 25px;
+  cursor: pointer; 
+  transition: background-color 0.3s, transform 0.2s; 
 }
 
 .indicator {
-  width: 15px;
-  height: 15px;
-  background-color: green; 
+  width: 30px;
+  height: 30px;
+  background-color: green;
   border-radius: 50%;
-  position: center;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2); 
 }
 
+.grid-item:hover {
+  background-color: #d1d1d1; 
+  transform: scale(1.02); 
+}
 
 .grid-item.occupied .indicator {
   background-color: red; 
