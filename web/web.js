@@ -26,4 +26,6 @@ document.addEventListener("DOMContentLoaded", function(event){
     console.log(res)
     createLockerMap(JSON.parse(res))
   });
+
+  
   
