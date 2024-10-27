@@ -4,7 +4,18 @@
         <link rel="stylesheet" href="web.css">
     </head>
     <body>
-        <h1>Lockers Available</h1>
-        
+        <h1>Book a Locker</h1>
+        <form class ="book">
+            <div class="elem-group">
+                <label for="Id">Your au-id</label>
+                <input type="text" id="name" name="auid" placeholder="auXXXXXX" pattern=[0-9]+ required>
+              </div>
+            <div class="elem-group">
+                <label for="password">Your Password</label>
+                <input type="password" id="password" name="password" required>
+              </div>
+            <button type="Book" id="button">Confirm Booking</button>
+        </form>
+        <script src="booking.js" ></script>
     </body>
 </html>
