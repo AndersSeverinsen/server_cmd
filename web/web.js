@@ -42,5 +42,17 @@ function main() {
     res = httpGet("http://127.0.0.1:8080/lockerStatus/")
     console.log(res)
     createLockerMap(JSON.parse(res))
-  });
+  };
+
+  document.querySelectorAll(".grid-item").forEach(item => {
+    item.addEventListener("click", function(event) {
+        console.log("clicked on grid-item")
+        if (item.classList.contains("occupied")) {
+            alert("This locker is already booked!");
+        } else {
+            window.location.href = "booklocker.html"; 
+        }
+    });
+});
+
   
