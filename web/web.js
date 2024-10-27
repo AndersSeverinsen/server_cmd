@@ -22,22 +22,25 @@ function httpGet(theUrl) {
     return xmlHttp.responseText;
 }
 
-document.addEventListener("DOMContentLoaded", function(event){
+
+var initial
+
+function continuousUpdate() {
+    setInterval( () => {
+        console.log("dfsdfsd")
+        let resp = httpGet("http://127.0.0.1:8080/lockerStatus/")
+        if (resp !== initial) {
+            document.querySelector(".big-grid").innerHTML = ''
+            createLockerMap(JSON.parse(resp))
+            continuousUpdate()
+        }
+    }, 1000)
+}
+
+
+function main() {
     res = httpGet("http://127.0.0.1:8080/lockerStatus/")
     console.log(res)
     createLockerMap(JSON.parse(res))
   });
-
-
-document.querySelectorAll(".grid-item").forEach(item => {
-    item.addEventListener("click", function(event) {
-        console.log("clicked on grid-item")
-        if (item.classList.contains("occupied")) {
-            alert("This locker is already booked!");
-        } else {
-            window.location.href = "booklocker.html"; 
-        }
-    });
-});
-
-
+  

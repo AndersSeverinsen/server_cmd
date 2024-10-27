@@ -20,7 +20,7 @@ type BookingResponse struct {
 	FreeLocker      bool `json:"freeLocker"`
 }
 
-var lockers = make([]*Locker, 10)
+var lockers = make([]*Locker, 0)
 
 func addLocker(ip string) {
 	lockers = append(lockers, &Locker{Userid: "", Lockernum: len(lockers), Lockerip: ip})
@@ -54,7 +54,7 @@ func book(userid string) string {
 	} else {
 		for i := range lockers {
 			if lockers[i].Userid == "" {
-				unlock(i)
+				unlock(i, "Red")
 				lockers[i].Userid = userid
 				response = BookingResponse{
 					ExistingBooking: false,
@@ -93,7 +93,7 @@ func bookHandler(w http.ResponseWriter, r *http.Request) {
 func cancel(userid string) string {
 	hasBooking, lockernum := hasLocker(userid)
 	if hasBooking {
-		unlock(lockernum)
+		unlock(lockernum, "Green")
 		lockers[lockernum].Userid = ""
 		return fmt.Sprintf(`{"message": "User %s has cancelled the booking for locker %d"}`, userid, lockernum)
 	}
@@ -117,7 +117,7 @@ func cancelHandler(w http.ResponseWriter, r *http.Request) {
 func keep(userid string) string {
 	hasBooking, lockernum := hasLocker(userid)
 	if hasBooking {
-		unlock(lockernum)
+		unlock(lockernum, "Red")
 		return fmt.Sprintf(`{"message": "User %s has kept the booking for locker %d"}`, userid, lockernum)
 	}
 	return fmt.Sprintf(`{"error": "User %s has no booking"}`, userid)
@@ -155,7 +155,7 @@ func unlockHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func unlock(lockerindex int) {
+func unlock(lockerindex int, color string) {
 	// Check if the locker is available
 	for _, locker := range lockers {
 		if locker.Lockernum == lockerindex {
@@ -163,7 +163,8 @@ func unlock(lockerindex int) {
 			ip := locker.Lockerip
 
 			// Send a POST request to the locker to unlock it
-			_, _ = http.Post("http://"+ip+":8080/unlock", "application/json", nil)
+			url := "http://" + ip + ":8080/unlock" + color
+			_, _ = http.Get(url)
 		}
 	}
 }
@@ -193,7 +194,7 @@ func addLockerPrompt() {
 }
 
 func main() {
-	initLockers()
+	//initLockers()
 	// Prompt the user to add a locker in a while loop
 	go addLockerPrompt()
 	http.HandleFunc("/book/", bookHandler)
@@ -201,6 +202,10 @@ func main() {
 	http.HandleFunc("/keepBooking/", keepHandler)
 	http.HandleFunc("/lockerStatus/", lockerStatus)
 	http.HandleFunc("/unlock/", unlockHandler)
+
+	// Serve static files from the "web" directory at the root "/"
+	fs := http.FileServer(http.Dir("./web"))
+	http.Handle("/", fs)
 
 	// Start the server on port 8080
 	fmt.Println("Server started on port 8080")
