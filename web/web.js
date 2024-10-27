@@ -22,6 +22,8 @@ function httpGet(theUrl) {
     return xmlHttp.responseText;
 }
 
+document.addEventListener("DOMContentLoaded",main)
+
 
 var initial
 
@@ -54,5 +56,3 @@ function main() {
         }
     });
 });
-
-  
