@@ -2,18 +2,42 @@ function createLockerMap(lockers) {
    let grid = document.querySelector(".big-grid") 
    for(let locker of lockers) {
     let indicator = document.createElement("div")
+    let shout = document.createElement("div")
+    shout.classList.add("shout-message")
+    shout.textContent = "Book available locker.";
     indicator.classList.add("indicator")
     let newGridItem = document.createElement("div") 
     newGridItem.classList.add("grid-item")
-    if(locker.userid !== "") {
+    let isOccupied = locker.userid !== ""
+    if(isOccupied) {
         newGridItem.classList.add("occupied")
     }
     newGridItem.setAttribute("id", locker.lockernum)
     newGridItem.innerText = locker.lockernum
     newGridItem.appendChild(indicator)
+    
     grid.appendChild(newGridItem)
-   }
+    if(!isOccupied){
+        newGridItem.addEventListener("mouseenter", (e) => {
+            document.body.appendChild(shout); 
+            shout.style.display = "block";
+        });
+
+        newGridItem.addEventListener("mousemove", (e) => {
+            shout.style.left = `${e.pageX + 10}px`; 
+            shout.style.top = `${e.pageY + 10}px`;  
+        });
+
+        newGridItem.addEventListener("mouseleave", () => {
+            shout.style.display = "none";
+            if (shout.parentElement) {
+                shout.parentElement.removeChild(shout); 
+            }
+        });
+    }
 }
+}
+
 
 function httpGet(theUrl) {
     var xmlHttp = new XMLHttpRequest();

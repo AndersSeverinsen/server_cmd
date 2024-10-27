@@ -43,6 +43,26 @@ body {
   background-color: red; 
 }
 
+.shout-message {
+  font-size: medium;
+  display: none;
+  background-color: white;
+  position: absolute;
+  padding: 3px;
+  border-radius: 3px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.grid-item:hover .shout-message {
+  display: block;
+}
+
+.grid-item:hover {
+  background-color: rgb(214, 214, 214);
+  cursor: pointer;
+}
+
 .booking-form {
   width: 500px;
   margin: 0 auto;
